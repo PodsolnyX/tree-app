@@ -6,7 +6,6 @@ h3 {
 }
 
 .app-container {
-    height: 100vh;
     width: 100%;
     display: flex;
     justify-content: center;
@@ -14,6 +13,7 @@ h3 {
 }
 
 .tree-container {
+    margin: 100px;
     min-width: 340px;
     padding: 0 30px;
     border: white 2px solid;
@@ -29,16 +29,17 @@ h3 {
 
 .button-container > div > button {
     color: white;
-    border: white 2px solid;
-    background-color: #0d1117;
+    border: 0;
+    border-radius: 8px;
+    background-color: rgba(63, 68, 72, 0.2);
     margin: 0 10px;
-    padding: 5px 20px;
+    padding: 9px 24px;
     cursor: pointer;
-    transition: 0.3s;
+    transition: 0.5s;
 }
 
 .button-container > div > button:hover {
-    background-color: #3f4448;
+    background-color: rgba(63, 68, 72, 0.5);
 }
 
 .tree-container > ul {
@@ -47,6 +48,27 @@ h3 {
 
 .choose-node {
     background-color: rgba(63, 68, 72, 0.2);
+}
+
+.empty-tree {
+    text-align: center;
+    margin-bottom: 19px;
+    color: #656565;
+}
+
+.input-node-label {
+    width: 100%;
+    padding: 0;
+    border: 0;
+    color: white;
+    background-color: rgba(63, 68, 72, 0);
+    border-bottom: 1px white solid;
+}
+
+.input-node-label:focus {
+    outline:none;
+    border-bottom: 1px white solid;
+    color: white;
 }
 
 li > div {
