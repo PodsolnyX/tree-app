@@ -25,7 +25,7 @@
     If you leave an empty line when editing the node name and save it, the
     node will be assigned the name "Default name".
 
-*approx. A "node" is a structural unit in the tree structure of an application.*
+*notation A "node" is a structural unit in the tree structure of an application.*
 
 ### Возможности приложения:
 
