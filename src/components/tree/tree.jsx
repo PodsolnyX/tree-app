@@ -58,7 +58,7 @@ const Tree = (props) => {
             if (curNode === null)
                 curNode = treeData[findChildIndex(treeData, id)];
             else
-                curNode = curNode.children[findChildIndex(curNode, arrId.slice(0, i + 1).join("-") ) ];
+                curNode = curNode.children[findChildIndex(curNode, arrId.slice(0, i + 1).join("-"))];
         })
 
         return curNode;
@@ -120,6 +120,12 @@ const Tree = (props) => {
         setEditMod(true);
     }
 
+    const onSaveNode = () => {
+        let curNode = getNodeRef(selectedNodeId);
+        checkNodeForEmptyLabel(curNode);
+        setEditMod(false);
+    }
+
     const onDeleteNode = () => {
         if (selectedNodeId.length === 1) {
             treeData.splice(findChildIndex(treeData, selectedNodeId), 1);
@@ -153,7 +159,7 @@ const Tree = (props) => {
     const onChangeNodeLabel = (label) => {
         let curNode = getNodeRef(selectedNodeId);
         curNode.label = label;
-        if (curNode.label.length === 0)
+        if (curNode.label.trim().length === 0)
             setIsEmptyNodeLabel(true);
         else
             setIsEmptyNodeLabel(false);
@@ -182,7 +188,11 @@ const Tree = (props) => {
                     isSelectedMod ?
                         <div>
                             <button onClick={onAddChildren}>Add children</button>
-                            <button onClick={onEditNode}>Edit</button>
+                            {
+                                isEditMod ? <button onClick={onSaveNode}>Save</button>
+                                    : <button onClick={onEditNode}>Edit</button>
+
+                            }
                             <button onClick={onDeleteNode}>Delete</button>
                         </div>
                         :
