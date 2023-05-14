@@ -3,7 +3,11 @@ import Node from "./node/node";
 
 const Tree = (props) => {
 
-    const [treeData, setTreeData] = useState(JSON.parse(JSON.stringify(props.data)));
+    const getTreeCopy = (treeData) => {
+        return JSON.parse(JSON.stringify(treeData))
+    }
+
+    const [treeData, setTreeData] = useState(getTreeCopy(props.data));
     const [isSelectedMod, setSelectedMod] = useState(false);
     const [isEditMod, setEditMod] = useState(false);
     const [isEmptyNodeLabel, setIsEmptyNodeLabel] = useState(false);
@@ -17,7 +21,7 @@ const Tree = (props) => {
 
         document.addEventListener("click", handleOutsideClick);
         return () => document.removeEventListener("click", handleOutsideClick);
-    }, [isEmptyNodeLabel]);
+    }, [isEmptyNodeLabel, treeData]);
 
     useEffect(() => {
         const listener = event => {
@@ -30,33 +34,34 @@ const Tree = (props) => {
         return () => {
             document.removeEventListener("keydown", listener);
         };
-    }, [isEmptyNodeLabel])
+    }, [isEmptyNodeLabel, treeData])
 
     const resetSelectMode = (withCheckNodeLabel = true) => {
+        const treeCopy = getTreeCopy(treeData);
         if (withCheckNodeLabel) {
-            let curNode = getNodeRef(selectedNodeId);
-            checkNodeForEmptyLabel(curNode);
+            let curNode = getNodeRef(selectedNodeId, treeCopy);
+            checkNodeForEmptyLabel(curNode, treeCopy);
         }
         setSelectedMod(false);
         setEditMod(false);
         selectNodeId("");
     }
 
-    const checkNodeForEmptyLabel = (node) => {
+    const checkNodeForEmptyLabel = (node, treeCopy) => {
         if (isEmptyNodeLabel) {
             node.label = "Default Name";
-            setTreeData([...treeData]);
+            setTreeData(treeCopy);
             setIsEmptyNodeLabel(false);
         }
     }
 
-    const getNodeRef = (nodeId) => {
+    const getNodeRef = (nodeId, treeCopy) => {
         const arrId = nodeId.split("-");
         let curNode = null;
 
         arrId.forEach((id, i) => {
             if (curNode === null)
-                curNode = treeData[findChildIndex(treeData, id)];
+                curNode = treeCopy[findChildIndex(treeCopy, id)];
             else
                 curNode = curNode.children[findChildIndex(curNode, arrId.slice(0, i + 1).join("-"))];
         })
@@ -65,7 +70,6 @@ const Tree = (props) => {
     }
 
     const findChildIndex = (parentNodeRef, childNodeId) => {
-        console.log(parentNodeRef, childNodeId)
         let index = -1;
 
         if (!!parentNodeRef.children) {
@@ -84,8 +88,9 @@ const Tree = (props) => {
     }
 
     const onClickNode = (targetNodeId) => {
-        let curNode = getNodeRef(selectedNodeId);
-        checkNodeForEmptyLabel(curNode);
+        const treeCopy = getTreeCopy(treeData);
+        let curNode = getNodeRef(selectedNodeId, treeCopy);
+        checkNodeForEmptyLabel(curNode, treeCopy);
 
         if (targetNodeId !== selectedNodeId) {
             setEditMod(false);
@@ -95,17 +100,14 @@ const Tree = (props) => {
     }
 
     const onAddNode = () => {
-        const newNodeId = `${treeData.length}`;
-        setTreeData(
-            [
-                ...treeData,
-                {
-                    id: newNodeId,
-                    label: "Default Name",
-                    children: []
-                }
-            ]
-        );
+        const treeCopy = getTreeCopy(treeData);
+        const newNodeId = `${treeCopy.length}`;
+        treeCopy.push({
+            id: newNodeId,
+            label: "Default Name",
+            children: []
+        })
+        setTreeData(treeCopy);
 
         selectNodeId(newNodeId);
         setSelectedMod(true);
@@ -113,7 +115,7 @@ const Tree = (props) => {
     };
 
     const onResetTree = () => {
-        setTreeData(JSON.parse(JSON.stringify(props.data)));
+        setTreeData(getTreeCopy(props.data));
     }
 
     const onEditNode = () => {
@@ -121,27 +123,30 @@ const Tree = (props) => {
     }
 
     const onSaveNode = () => {
-        let curNode = getNodeRef(selectedNodeId);
-        checkNodeForEmptyLabel(curNode);
+        const treeCopy = getTreeCopy(treeData);
+        let curNode = getNodeRef(selectedNodeId, treeCopy);
+        checkNodeForEmptyLabel(curNode, treeCopy);
         setEditMod(false);
     }
 
     const onDeleteNode = () => {
-        if (selectedNodeId.length === 1) {
-            treeData.splice(findChildIndex(treeData, selectedNodeId), 1);
+        const treeCopy = getTreeCopy(treeData);
+        if (selectedNodeId.split("-").length === 1) {
+            treeCopy.splice(findChildIndex(treeCopy, selectedNodeId), 1);
         } else {
-            let curNode = getNodeRef(selectedNodeId.slice(0, -2));
+            let curNode = getNodeRef(selectedNodeId.slice(0, -2), treeCopy);
             curNode.children.splice(findChildIndex(curNode, selectedNodeId), 1);
         }
-        setTreeData([...treeData]);
+        setTreeData(treeCopy);
 
         setIsEmptyNodeLabel(false);
         resetSelectMode(false);
     }
 
     const onAddChildren = () => {
-        let curNode = getNodeRef(selectedNodeId);
-        checkNodeForEmptyLabel(curNode);
+        const treeCopy = getTreeCopy(treeData);
+        let curNode = getNodeRef(selectedNodeId, treeCopy);
+        checkNodeForEmptyLabel(curNode, treeCopy);
         const newChildId = `${selectedNodeId}-${curNode.children.length}`;
 
         curNode.children.push({
@@ -149,7 +154,7 @@ const Tree = (props) => {
             label: "Default Name",
             children: []
         })
-        setTreeData([...treeData]);
+        setTreeData(treeCopy);
 
         selectNodeId(newChildId);
         setIsEmptyNodeLabel(true);
@@ -157,13 +162,14 @@ const Tree = (props) => {
     }
 
     const onChangeNodeLabel = (label) => {
-        let curNode = getNodeRef(selectedNodeId);
+        const treeCopy = getTreeCopy(treeData);
+        let curNode = getNodeRef(selectedNodeId, treeCopy);
         curNode.label = label;
         if (curNode.label.trim().length === 0)
             setIsEmptyNodeLabel(true);
         else
             setIsEmptyNodeLabel(false);
-        setTreeData([...treeData]);
+        setTreeData(treeCopy);
     }
 
     return (
