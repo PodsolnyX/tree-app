@@ -14,6 +14,7 @@ const Tree = (props) => {
             if (event.target.className === "app-container")
                 resetSelectMode();
         }
+
         document.addEventListener("click", handleOutsideClick);
         return () => document.removeEventListener("click", handleOutsideClick);
     }, [isEmptyNodeLabel]);
@@ -31,31 +32,40 @@ const Tree = (props) => {
         };
     }, [isEmptyNodeLabel])
 
-    const resetSelectMode = () => {
-        if (isEmptyNodeLabel) {
+    const resetSelectMode = (withCheckNodeLabel = true) => {
+        if (withCheckNodeLabel) {
             let curNode = getNodeRef(selectedNodeId);
-            curNode.label = "Default Name";
-            setTreeData([...treeData]);
-            setIsEmptyNodeLabel(false);
+            checkNodeForEmptyLabel(curNode);
         }
         setSelectedMod(false);
         setEditMod(false);
         selectNodeId("");
     }
 
+    const checkNodeForEmptyLabel = (node) => {
+        if (isEmptyNodeLabel) {
+            node.label = "Default Name";
+            setTreeData([...treeData]);
+            setIsEmptyNodeLabel(false);
+        }
+    }
+
     const getNodeRef = (nodeId) => {
+        const arrId = nodeId.split("-");
         let curNode = null;
 
-        for (let i = 1; i <= nodeId.length; i += 2) {
+        arrId.forEach((id, i) => {
             if (curNode === null)
-                curNode = treeData[findChildIndex(treeData, nodeId.slice(0, i))];
+                curNode = treeData[findChildIndex(treeData, id)];
             else
-                curNode = curNode.children[findChildIndex(curNode, nodeId.slice(0, i))];
-        }
+                curNode = curNode.children[findChildIndex(curNode, arrId.slice(0, i + 1).join("-") ) ];
+        })
+
         return curNode;
     }
 
     const findChildIndex = (parentNodeRef, childNodeId) => {
+        console.log(parentNodeRef, childNodeId)
         let index = -1;
 
         if (!!parentNodeRef.children) {
@@ -73,18 +83,15 @@ const Tree = (props) => {
         }
     }
 
-    const onClickNode = (id) => {
-        if (isEmptyNodeLabel) {
-            let curNode = getNodeRef(selectedNodeId);
-            curNode.label = "Default Name";
-            setTreeData([...treeData]);
-            setIsEmptyNodeLabel(false);
-        }
-        if (id !== selectedNodeId) {
+    const onClickNode = (targetNodeId) => {
+        let curNode = getNodeRef(selectedNodeId);
+        checkNodeForEmptyLabel(curNode);
+
+        if (targetNodeId !== selectedNodeId) {
             setEditMod(false);
         }
         setSelectedMod(true);
-        selectNodeId(id);
+        selectNodeId(targetNodeId);
     }
 
     const onAddNode = () => {
@@ -98,9 +105,10 @@ const Tree = (props) => {
                     children: []
                 }
             ]
-        )
-        setSelectedMod(true);
+        );
+
         selectNodeId(newNodeId);
+        setSelectedMod(true);
         setEditMod(true);
     };
 
@@ -120,21 +128,14 @@ const Tree = (props) => {
             curNode.children.splice(findChildIndex(curNode, selectedNodeId), 1);
         }
         setTreeData([...treeData]);
+
         setIsEmptyNodeLabel(false);
-        setSelectedMod(false);
-        setEditMod(false);
-        selectNodeId("");
+        resetSelectMode(false);
     }
 
     const onAddChildren = () => {
         let curNode = getNodeRef(selectedNodeId);
-
-        if (isEmptyNodeLabel) {
-            curNode.label = "Default Name";
-            setTreeData([...treeData]);
-            setIsEmptyNodeLabel(false);
-        }
-
+        checkNodeForEmptyLabel(curNode);
         const newChildId = `${selectedNodeId}-${curNode.children.length}`;
 
         curNode.children.push({
@@ -142,8 +143,8 @@ const Tree = (props) => {
             label: "Default Name",
             children: []
         })
-
         setTreeData([...treeData]);
+
         selectNodeId(newChildId);
         setIsEmptyNodeLabel(true);
         setEditMod(true);
